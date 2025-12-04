@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveWithVelocity;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
@@ -113,7 +114,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
-        drive.setDefaultCommand(DriveCommands.joystickDrive(
+        drive.setDefaultCommand(new DriveWithVelocity(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> controller.getRightX()));
 
         // Switch to X pattern when X button is pressed
