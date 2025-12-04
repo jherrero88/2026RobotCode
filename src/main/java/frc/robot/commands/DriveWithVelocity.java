@@ -31,7 +31,7 @@ public class DriveWithVelocity extends Command {
     }
 
     @Override
-    public void execute() {
+    public void execute() { // ! for whatever, the discretize stuff that's supposed to keep it in a straight line doesn't seem to work in Sim
         // Get linear velocity
         Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
