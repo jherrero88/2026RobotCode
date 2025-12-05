@@ -57,5 +57,6 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "editor.inlayHints.enabled": "on"
+  "editor.inlayHints.enabled": "on", 
+  "editor.tabSize": 4
 }

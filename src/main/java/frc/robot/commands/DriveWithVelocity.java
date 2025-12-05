@@ -13,44 +13,52 @@ public class DriveWithVelocity extends Command {
     private final Drive drive;
     private final DoubleSupplier xSupplier;
     private final DoubleSupplier ySupplier;
-    private final DoubleSupplier omegaSupplier;
+    private final DoubleSupplier oSupplier;
     
+    // local constants
     private static final double DEADBAND = 0.1;
+    private static final double EXPONENT = 2;
 
     public DriveWithVelocity(
         Drive drive, 
         DoubleSupplier xSupplier, 
         DoubleSupplier ySupplier, 
-        DoubleSupplier omegaSupplier
+        DoubleSupplier oSupplier
     ) {
         addRequirements(drive);
         this.drive = drive;
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
-        this.omegaSupplier = omegaSupplier;
+        this.oSupplier = oSupplier;
     }
 
     @Override
-    public void execute() { // ! for whatever, the discretize stuff that's supposed to keep it in a straight line doesn't seem to work in Sim
-        // Get linear velocity
+    public void execute() { // ! for some reason, the discretize stuff that's supposed to keep it in a straight line doesn't seem to work in Sim
+        // get linear velocity vector
         Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-        // Apply rotation deadband
-        double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+        // get angular velocity scalar
+        double angularVelocity = MathUtil.applyDeadband(oSupplier.getAsDouble(), DEADBAND); // apply deadband
+        angularVelocity = Math.copySign(Math.pow(angularVelocity, EXPONENT), angularVelocity); // apply exponent
 
-        // Square rotation value for more precise control
-        omega = Math.copySign(omega * omega, omega);
-
-        // Convert to field relative speeds & send command
+        // convert to chassisSpeeds
         ChassisSpeeds speeds = new ChassisSpeeds(
-                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                omega * drive.getMaxAngularSpeedRadPerSec());
+            linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+            linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+            angularVelocity * drive.getMaxAngularSpeedRadPerSec()
+        );
+        
+        // ! not sure if we need flipping (we don't if we zero the gyro at the start of every match)
         boolean isFlipped = DriverStation.getAlliance().isPresent()
-                && DriverStation.getAlliance().get() == Alliance.Red;
-        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+            && DriverStation.getAlliance().get() == Alliance.Red;
+
+        // run velocity
+        drive.runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
                 speeds,
-                isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+                isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()
+            )
+        );
     }
 
     @Override
@@ -59,16 +67,15 @@ public class DriveWithVelocity extends Command {
     }
 
     private Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-        // Apply deadband
+        // apply deadband
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-        // Square magnitude for more precise control
-        linearMagnitude = linearMagnitude * linearMagnitude;
+        // apply exponent
+        linearMagnitude *= linearMagnitude;
 
-        // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
-                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-                .getTranslation();
+            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+            .getTranslation();
     }
 }
