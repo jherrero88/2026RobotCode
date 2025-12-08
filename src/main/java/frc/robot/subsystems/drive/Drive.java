@@ -19,10 +19,13 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -32,10 +35,21 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.*;
 
+import choreo.trajectory.SwerveSample;
+
 public class Drive extends SubsystemBase implements Vision.VisionConsumer {    
+    private enum DRIVE_MODE {
+        DISABLED,
+        POSITION,
+        VELOCITY,
+        CHARACTERIZING
+    };
+    private DRIVE_MODE controlMode = DRIVE_MODE.DISABLED;
+    
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
     
-    // odometry
+    // ————— odometry ————— //
+
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     static final Lock odometryLock = new ReentrantLock();
@@ -48,20 +62,38 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     };
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(DriveConstants.KINEMATICS, rawGyroRotation, lastModulePositions, new Pose2d());
     
-    // sysid
-    private final SysIdRoutine sysId = new SysIdRoutine(
+    // ————— characterization ————— //
+
+    private Voltage[] characterizationVolts = {Volts.of(0), Volts.of(0), Volts.of(0), Volts.of(0)};
+    private Angle[] characterizationPositions = {Rotations.of(0), Rotations.of(0), Rotations.of(0), Rotations.of(0)};
+    private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(
-            null, 
-            null, 
-            null, 
-            (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())
+            Volts.per(Second).of(1), // ramp rate
+            Volts.of(1.75), // step voltage
+            Seconds.of(4), // timeout
+            (state) -> Logger.recordOutput("drive/sysIdState", state.toString()) // send the data to advantagekit
         ),
         new SysIdRoutine.Mechanism(
-            (voltage) -> runCharacterization(voltage.in(Volts)), 
-            null, 
+            (volts) -> this.runCharacterization(
+                new Voltage[] {volts, volts, volts, volts}, 
+                new Angle[] {Rotations.of(0), Rotations.of(0), Rotations.of(0), Rotations.of(0)}
+            ), // characterization supplier
+            null, // no log consumer needed since advantagekit records the data
             this
         )
     );
+
+    // ————— position ————— //
+
+    private Pose2d positionSetpoint = new Pose2d();
+    private Twist2d twistSetpoint = new Twist2d();
+    private final PIDController xPID = new PIDController(5, 0, 0);
+    private final PIDController yPID = new PIDController(5, 0, 0);
+    private final PIDController oPID = new PIDController(10, 0, 0);
+
+    // ————— velocity ————— //
+
+    private ChassisSpeeds speeds = new ChassisSpeeds();
 
     public Drive(
         GyroIO gyroIO,
@@ -80,34 +112,27 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
         PhoenixOdometryThread.getInstance().start(); // start odometry thread
+        
+        oPID.enableContinuousInput(-Math.PI, Math.PI); // allows position PID to turn in the correct direction
     }
 
     @Override
     public void periodic() {
+        if (DriverStation.isDisabled()) {
+            controlMode = DRIVE_MODE.DISABLED;
+        }
+
+        // ————— odometry ————— //
+
         odometryLock.lock(); // prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("drive/gyro", gyroInputs);
-        for (var module : modules) {
+        for (var module : modules) { // ! uhhhhhhhhhh
             module.periodic();
         }
         odometryLock.unlock();
 
-        // stop moving if disabled
-        if (DriverStation.isDisabled()) {
-            for (var module : modules) {
-                module.stop();
-            }
-        }
-
-        // Log empty setpoint states when disabled
-        if (DriverStation.isDisabled()) {
-            Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-            Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
-        }
-
-        // ! hmmmmmm
-
-        // Update odometry
+        // Update odometry  // ! hmmmmmm
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
         for (int i = 0; i < sampleCount; i++) {
@@ -135,61 +160,89 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             // Apply update
             poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
         }
-    }
 
-    public void runVelocity(ChassisSpeeds speeds) {
-        // Calculate module setpoints
-        speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD); // explanation: https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/30
-        SwerveModuleState[] setpointStates = DriveConstants.KINEMATICS.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);
+        switch (controlMode) {
+            case DISABLED:
+                // set all module voltages to 0
+                for (Module module : modules) {
+                    module.stop();
+                }
+                Logger.recordOutput("outputs/drive/moduleStatesInput", new SwerveModuleState[] {});
+                break;
+            case CHARACTERIZING:
+                for (int i = 0; i < 4; i++) {
+                    modules[i].runCharacterization(characterizationVolts[i].in(Volts), new Rotation2d(characterizationPositions[i]));
+                }
+                Logger.recordOutput("outputs/drive/moduleStatesInput", new SwerveModuleState[] {});
+                break;
+            case POSITION:
+                // get PIDs
+                double xOutput = xPID.calculate(getPose().getX(), positionSetpoint.getX());
+                double yOutput = yPID.calculate(getPose().getY(), positionSetpoint.getY());
+                double oOutput = oPID.calculate(getPose().getRotation().getRadians(), positionSetpoint.getRotation().getRadians());
 
-        // Log unoptimized setpoints and setpoint speeds
-        Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-        Logger.recordOutput("SwerveChassisSpeeds/Setpoints", speeds);
+                // create chassisspeeds object with FOC
+                speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                    twistSetpoint.dx + xOutput,
+                    twistSetpoint.dy + yOutput,
+                    twistSetpoint.dtheta + oOutput,
+                    getPose().getRotation()
+                );
+                // fallthrough to VELOCITY case; no break statement needed
+            case VELOCITY: 
+                speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD); // explaination: https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/30
+                
+                SwerveModuleState[] moduleStates = DriveConstants.KINEMATICS.toSwerveModuleStates(speeds); // convert speeds to module states
+                SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DriveConstants.kSpeedAt12Volts); // renormalize wheel speeds
 
-        // Send setpoints to modules
-        for (int i = 0; i < 4; i++) {
-            modules[i].runSetpoint(setpointStates[i]);
+                // run modules
+                for (int i = 0; i < 4; i++) {
+                    modules[i].runSetpoint(moduleStates[i]);
+                }
+                Logger.recordOutput("outputs/drive/moduleStatesInput", moduleStates);
+                break;
         }
-
-        // Log optimized setpoints (runSetpoint mutates each state)
-        Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
     }
 
-    /** Runs the drive in a straight line with the specified drive output. */
-    public void runCharacterization(double output) {
-        for (int i = 0; i < 4; i++) {
-            modules[i].runCharacterization(output);
-        }
-    }
+    // ————— functions for running modules ————— //
 
-    /** Stops the drive. */
     public void stop() {
-        runVelocity(new ChassisSpeeds());
+        controlMode = DRIVE_MODE.DISABLED;
     }
 
-    /**
-     * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will return to their
-     * normal orientations the next time a nonzero velocity is requested.
-     */
-    public void stopWithX() { // ! I... don't believe this does what it says it does???
-        Rotation2d[] headings = new Rotation2d[4];
-        for (int i = 0; i < 4; i++) {
-            headings[i] = DriveConstants.MODULE_TRANSLATIONS[i].getAngle();
-        }
-        DriveConstants.KINEMATICS.resetHeadings(headings);
-        stop();
+    public void runCharacterization(Voltage[] volts, Angle[] positions) {
+        controlMode = DRIVE_MODE.CHARACTERIZING;
+        characterizationVolts = volts;
+        characterizationPositions = positions;
     }
 
-    /** Returns a command to run a quasistatic test in the specified direction. */
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.quasistatic(direction));
+    public void runPosition(Pose2d pose) {
+        controlMode = DRIVE_MODE.POSITION;
+        positionSetpoint = pose;
+        twistSetpoint = new Twist2d();
     }
 
-    /** Returns a command to run a dynamic test in the specified direction. */
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+    public void runAutoPosition(SwerveSample sample) {
+        controlMode = DRIVE_MODE.POSITION;
+        positionSetpoint = sample.getPose();
+        twistSetpoint = sample.getChassisSpeeds().toTwist2d(0.02);
     }
+
+    public void runVelocity(ChassisSpeeds speedsInput) {
+        controlMode = DRIVE_MODE.VELOCITY;
+        speeds = speedsInput;
+    }
+
+    // ————— functions for sysid ————— // 
+
+    public Command sysIdFull() {
+        return sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward)
+            .andThen(sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse))
+            .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward))
+            .andThen(sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse));
+    }
+
+    // ! ————— functions for odometry ————— //
 
     /** Returns the module states (turn angles and drive velocities) for all of the modules. */
     @AutoLogOutput(key = "SwerveStates/Measured") // ! don't use this annotation

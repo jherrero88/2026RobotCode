@@ -22,7 +22,7 @@ public class RobotContainer {
     private final Vision vision; // ! make this poseEstimator
 
     // utils
-    private AutoRoutineGenerator autoGenerator;
+    private AutoGenerator autoGenerator;
     private AutoChooser autoChooser;
     private SwerveDriveSimulation driveSimulation;
 
@@ -99,11 +99,8 @@ public class RobotContainer {
             )
         );
 
-        // x-lock
-        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
         // testing
-        controller.a().whileTrue(new DriveWithPosition(drive, new Pose2d(1, 5, new Rotation2d(Math.PI/2))));
+        controller.b().whileTrue(new DriveWithPosition(drive, new Pose2d(1, 5, new Rotation2d(Math.PI/2))));
 
         // ————— uhhhhhh ————— //
 
@@ -112,7 +109,8 @@ public class RobotContainer {
         // Constants.CURRENT_MODE == Constants.ROBOT_MODE.SIM ? 
         // () -> drive.setPose(
         //     driveSimulation.getSimulatedDriveTrainPose()
-        // ) // reset odometry to actual robot pose during simulation // ! not sure what this means
+        // ) //
+        //  reset odometry to actual robot pose during simulation // ! not sure what this means
         // : () -> drive.setPose(
         //     new Pose2d(drive.getPose().getTranslation(), new Rotation2d()) // zero gyro
         // );
@@ -124,7 +122,7 @@ public class RobotContainer {
     // ————— autos ————— //
 
     private void configureAutos() {
-        autoGenerator = new AutoRoutineGenerator(drive);
+        autoGenerator = new AutoGenerator(drive, driveSimulation);
         autoChooser = new AutoChooser();
 
         autoChooser.addRoutine("Test", () -> autoGenerator.test());
@@ -136,7 +134,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() { // called by Robot.java on autonomousInit
-        return new InstantCommand();
+        return autoChooser.selectedCommand();
     }
 
     // ————— simulation ————— //

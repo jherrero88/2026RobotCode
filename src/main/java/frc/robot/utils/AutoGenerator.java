@@ -1,33 +1,31 @@
 package frc.robot.utils;
 
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+
 import choreo.auto.*;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.math.geometry.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 
-public class AutoRoutineGenerator {
+public class AutoGenerator {
     private final AutoFactory autoFactory;
 
     private final Drive drive;
 
-    public AutoRoutineGenerator(
-        Drive drive
+    public AutoGenerator(
+        Drive drive, 
+        SwerveDriveSimulation driveSimulation
     ) {
         autoFactory = new AutoFactory(
             drive::getPose,
-            drive::setPose,
-            (sample) -> Commands.run(
-                () -> new DriveWithPosition(
-                    drive, 
-                    sample.getPose(), 
-                    sample.getChassisSpeeds().toTwist2d(0.02)
-                )
-            ), 
-            DriverStation.getAlliance().isPresent() ? DriverStation.getAlliance().get() == DriverStation.Alliance.Red : false,
+            (pose) -> {
+                drive.setPose(pose);
+                driveSimulation.setSimulationWorldPose(pose);
+            },
+            drive::runAutoPosition,
+            false, 
+            // DriverStation.getAlliance().isPresent() ? DriverStation.getAlliance().get() == DriverStation.Alliance.Red : false,
             drive
         );
 
@@ -46,7 +44,7 @@ public class AutoRoutineGenerator {
         routine.active().onTrue(
             trajectory.resetOdometry()
             .andThen(trajectory.cmd())
-            .andThen(new DriveWithPosition(drive, trajectory.getFinalPose().get()))
+            // .andThen(new DriveWithPosition(drive, trajectory.getFinalPose().get()))
         );
 
         return routine;

@@ -49,7 +49,7 @@ public class Module {
 
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+        Logger.processInputs("drive/Module" + Integer.toString(index), inputs);
 
         // Calculate positions for odometry
         int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
@@ -78,9 +78,9 @@ public class Module {
     }
 
     /** Runs the module with the specified output while controlling to zero degrees. */
-    public void runCharacterization(double output) {
+    public void runCharacterization(double output, Rotation2d turn) {
         io.setDriveOpenLoop(output);
-        io.setTurnPosition(new Rotation2d());
+        io.setTurnPosition(turn);
     }
 
     /** Disables all outputs to motors. */
