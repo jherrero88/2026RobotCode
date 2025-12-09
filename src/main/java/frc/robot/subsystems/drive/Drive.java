@@ -103,10 +103,10 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         ModuleIO brModuleIO
     ) {
         this.gyroIO = gyroIO;
-        modules[0] = new Module(flModuleIO, 0, DriveConstants.FrontLeft);
-        modules[1] = new Module(frModuleIO, 1, DriveConstants.FrontRight);
-        modules[2] = new Module(blModuleIO, 2, DriveConstants.BackLeft);
-        modules[3] = new Module(brModuleIO, 3, DriveConstants.BackRight);
+        modules[0] = new Module(flModuleIO, 0, DriveConstants.SWERVE_MODULE_CONSTANTS[0]);
+        modules[1] = new Module(frModuleIO, 1, DriveConstants.SWERVE_MODULE_CONSTANTS[1]);
+        modules[2] = new Module(blModuleIO, 2, DriveConstants.SWERVE_MODULE_CONSTANTS[2]);
+        modules[3] = new Module(brModuleIO, 3, DriveConstants.SWERVE_MODULE_CONSTANTS[3]);
 
         // Usage reporting for swerve template // ! tf is this
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -193,7 +193,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD); // explaination: https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/30
                 
                 SwerveModuleState[] moduleStates = DriveConstants.KINEMATICS.toSwerveModuleStates(speeds); // convert speeds to module states
-                SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DriveConstants.kSpeedAt12Volts); // renormalize wheel speeds
+                SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DriveConstants.MAX_THEORETICAL_LINEAR_SPEED); // renormalize wheel speeds
 
                 // run modules
                 for (int i = 0; i < 4; i++) {
@@ -312,11 +312,11 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     // ! these should probably be constants, and they should also be limited to the maxspeed
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-        return DriveConstants.kSpeedAt12Volts.in(MetersPerSecond);
+        return DriveConstants.MAX_THEORETICAL_LINEAR_SPEED.in(MetersPerSecond);
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
-        return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
+        return getMaxLinearSpeedMetersPerSec() / DriveConstants.TRACK_RADIUS;
     }
 }

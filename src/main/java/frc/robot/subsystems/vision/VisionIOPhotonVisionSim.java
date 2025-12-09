@@ -54,7 +54,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
         // // Approximate detection noise with average and standard deviation error in pixels.
         // cameraProperties.setCalibError(0.25, 0.08); // ! maybe remove this for best case scenario
         // // Set the camera image capture framerate (Note: this is limited by robot loop rate).
-        cameraProperties.setFPS(20);
+        cameraProperties.setFPS(20); // ! makes shit blinky and bad
         // // The average and standard deviation in milliseconds of image data latency.
         // cameraProperties.setAvgLatencyMs(35);
         // cameraProperties.setLatencyStdDevMs(5);

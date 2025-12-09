@@ -33,10 +33,10 @@ public class RobotContainer {
             case REAL: // real robot, instantiate hardware IO implementations
                 drive = new Drive(
                     new GyroIOPigeon2(),
-                    new ModuleIOTalonFXReal(DriveConstants.FrontLeft),
-                    new ModuleIOTalonFXReal(DriveConstants.FrontRight),
-                    new ModuleIOTalonFXReal(DriveConstants.BackLeft),
-                    new ModuleIOTalonFXReal(DriveConstants.BackRight)
+                    new ModuleIOTalonFXReal(DriveConstants.SWERVE_MODULE_CONSTANTS[0]),
+                    new ModuleIOTalonFXReal(DriveConstants.SWERVE_MODULE_CONSTANTS[1]),
+                    new ModuleIOTalonFXReal(DriveConstants.SWERVE_MODULE_CONSTANTS[2]),
+                    new ModuleIOTalonFXReal(DriveConstants.SWERVE_MODULE_CONSTANTS[3])
                 );
                 this.vision = new Vision(
                     drive,
@@ -49,10 +49,10 @@ public class RobotContainer {
 
                 drive = new Drive(
                     new GyroIOSim(driveSimulation.getGyroSimulation()),
-                    new ModuleIOTalonFXSim(DriveConstants.FrontLeft, driveSimulation.getModules()[0]),
-                    new ModuleIOTalonFXSim(DriveConstants.FrontRight, driveSimulation.getModules()[1]),
-                    new ModuleIOTalonFXSim(DriveConstants.BackLeft, driveSimulation.getModules()[2]),
-                    new ModuleIOTalonFXSim(DriveConstants.BackRight, driveSimulation.getModules()[3])
+                    new ModuleIOTalonFXSim(DriveConstants.SWERVE_MODULE_CONSTANTS[0], driveSimulation.getModules()[0]),
+                    new ModuleIOTalonFXSim(DriveConstants.SWERVE_MODULE_CONSTANTS[1], driveSimulation.getModules()[1]),
+                    new ModuleIOTalonFXSim(DriveConstants.SWERVE_MODULE_CONSTANTS[2], driveSimulation.getModules()[2]),
+                    new ModuleIOTalonFXSim(DriveConstants.SWERVE_MODULE_CONSTANTS[3], driveSimulation.getModules()[3])
                 );
                 vision = new Vision(
                     drive,
@@ -142,7 +142,7 @@ public class RobotContainer {
     // ————— simulation ————— //
 
     private void configureSimulation() {
-        driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, startPose);
+        driveSimulation = new SwerveDriveSimulation(DriveConstants.DRIVE_SIMULATION_CONFIG, startPose);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         // SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralOnField(new Pose2d(Math.random() * 10, Math.random() * 10, new Rotation2d())));
     }
