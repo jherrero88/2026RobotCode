@@ -14,6 +14,8 @@ import frc.robot.subsystems.vision.*;
 import frc.robot.utils.*;
 
 public class RobotContainer {
+    final Pose2d startPose = new Pose2d(3, 3, new Rotation2d());
+
     // controllers
     private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -140,7 +142,7 @@ public class RobotContainer {
     // ————— simulation ————— //
 
     private void configureSimulation() {
-        driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, startPose);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         // SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralOnField(new Pose2d(Math.random() * 10, Math.random() * 10, new Rotation2d())));
     }
@@ -168,7 +170,7 @@ public class RobotContainer {
             return;
         }
 
-        driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+        driveSimulation.setSimulationWorldPose(startPose);
         SimulatedArena.getInstance().resetFieldForAuto();
     }
 }

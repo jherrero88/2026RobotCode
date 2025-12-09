@@ -20,3 +20,9 @@
  - OrangePis:
      - Front dashboard IP address is 10.32.05.16:5800
      - Back dashboard IP address is 10.32.05.17:5800
+ - Code: 
+     - Template taken from https://github.com/Shenzhen-Robotics-Alliance/AdvantageKit-TalonSwerveTemplate-MapleSim-Enhanced
+     - 
+ - Advantagekit: 
+     - Custom assets: https://docs.advantagescope.org/more-features/custom-assets
+     - To set these up to be displayed in advantagescope, go to Help > Use Custom Assets Folder and then select the folder called "advantagescope_assets" in this project

@@ -16,6 +16,7 @@ package frc.robot.subsystems.vision;
 import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -46,7 +47,17 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
         }
 
         // Add sim camera
-        var cameraProperties = new SimCameraProperties(); // ! make this not be the defaults for more realistic sim
+        var cameraProperties = new SimCameraProperties(); 
+        // ! make this not be the defaults for more realistic sim
+        // // A 640 x 480 camera with a 100 degree diagonal FOV.
+        cameraProperties.setCalibration(1920, 1400, Rotation2d.fromDegrees(92));
+        // // Approximate detection noise with average and standard deviation error in pixels.
+        // cameraProperties.setCalibError(0.25, 0.08); // ! maybe remove this for best case scenario
+        // // Set the camera image capture framerate (Note: this is limited by robot loop rate).
+        cameraProperties.setFPS(20);
+        // // The average and standard deviation in milliseconds of image data latency.
+        // cameraProperties.setAvgLatencyMs(35);
+        // cameraProperties.setLatencyStdDevMs(5);
         cameraSim = new PhotonCameraSim(camera, cameraProperties);
         visionSim.addCamera(cameraSim, robotToCamera);
     }

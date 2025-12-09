@@ -38,13 +38,14 @@ public class AutoGenerator {
         AutoRoutine routine = autoFactory.newRoutine("Test");
 
         // load trajectories
-        AutoTrajectory trajectory = routine.trajectory("Test");
+        AutoTrajectory trajectory0 = routine.trajectory("Test", 0);
+        AutoTrajectory trajectory1 = routine.trajectory("Test", 1);
 
         // when routine begins, reset odometry, start trajectory
         routine.active().onTrue(
-            trajectory.resetOdometry()
-            .andThen(trajectory.cmd())
-            // .andThen(new DriveWithPosition(drive, trajectory.getFinalPose().get()))
+            trajectory0.resetOdometry()
+            .andThen(trajectory0.cmd())
+            .andThen(trajectory1.cmd())
         );
 
         return routine;
