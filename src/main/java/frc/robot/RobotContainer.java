@@ -106,19 +106,19 @@ public class RobotContainer {
 
         // ————— uhhhhhh ————— //
 
-        // ! ermmmmmmmmm idk: 
-        // final Runnable resetGyro = 
-        // Constants.CURRENT_MODE == Constants.ROBOT_MODE.SIM ? 
-        // () -> drive.setPose(
-        //     driveSimulation.getSimulatedDriveTrainPose()
-        // ) //
+        // ! ermmmmmmmmm idk: test this
+        final Runnable resetGyro = 
+        Constants.CURRENT_MODE == Constants.ROBOT_MODE.SIM ? 
+        () -> drive.setPose(
+            driveSimulation.getSimulatedDriveTrainPose()
+        ) //
         //  reset odometry to actual robot pose during simulation // ! not sure what this means
-        // : () -> drive.setPose(
-        //     new Pose2d(drive.getPose().getTranslation(), new Rotation2d()) // zero gyro
-        // );
+        : () -> drive.setPose(
+            new Pose2d(drive.getPose().getTranslation(), new Rotation2d()) // zero gyro
+        );
         
         // ! idk why it has to be run by the controller (wait, does xbox controller have a literal start button)
-        // controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+        controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
     }
 
     // ————— autos ————— //

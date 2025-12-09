@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.*;
 
 public class DriveWithJoysticks extends Command {
@@ -49,14 +50,12 @@ public class DriveWithJoysticks extends Command {
         );
         
         // ! not sure if we need flipping (we don't if we zero the gyro at the start of every match)
-        boolean isFlipped = DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
 
         // run velocity
         drive.runVelocity(
             ChassisSpeeds.fromFieldRelativeSpeeds(
                 speeds,
-                isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()
+                Constants.USE_ALLIANCE_FLIPPING ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()
             )
         );
     }

@@ -5,6 +5,7 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import choreo.auto.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.math.geometry.*;
+import frc.robot.Constants;
 import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 
@@ -24,8 +25,7 @@ public class AutoGenerator {
                 driveSimulation.setSimulationWorldPose(pose);
             },
             drive::runAutoPosition,
-            false, 
-            // DriverStation.getAlliance().isPresent() ? DriverStation.getAlliance().get() == DriverStation.Alliance.Red : false,
+            Constants.USE_ALLIANCE_FLIPPING, 
             drive
         );
 
