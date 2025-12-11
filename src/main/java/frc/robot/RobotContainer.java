@@ -3,6 +3,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -44,8 +46,8 @@ public class RobotContainer {
                 poseEstimator = new PoseEstimator(
                     new GyroIOPigeon2(),
                     new CameraIOPhotonVision[] {
-                        new CameraIOPhotonVision(VisionConstants.camera0Name, new Transform3d()),
-                        new CameraIOPhotonVision(VisionConstants.camera1Name, new Transform3d())
+                        new CameraIOPhotonVision(VisionConstants.camera0Name, VisionConstants.robotToCamera0),
+                        new CameraIOPhotonVision(VisionConstants.camera1Name, VisionConstants.robotToCamera1)
                     }, 
                     drive
                 );
@@ -116,6 +118,13 @@ public class RobotContainer {
 
         // testing
         controller.b().whileTrue(new DriveWithPosition(drive, poseEstimator, new Pose2d(1, 5, new Rotation2d(Math.PI/2))));
+        controller.a().whileTrue(Commands.run(() -> drive.runVelocity(
+            new ChassisSpeeds(
+                0.5, 
+                0,  // ! test driving forwards
+                0
+            )
+        )));
     }
 
     // ————— autos ————— //

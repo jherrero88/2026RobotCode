@@ -179,7 +179,6 @@ public class Drive extends SubsystemBase {
     public void runVelocity(ChassisSpeeds speedsInput) {
         controlMode = DRIVE_MODE.VELOCITY;
         speeds = speedsInput;
-        System.out.println(speedsInput);
     }
 
     // ————— functions for sysid ————— // 
