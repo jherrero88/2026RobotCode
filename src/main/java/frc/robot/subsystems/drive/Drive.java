@@ -193,12 +193,16 @@ public class Drive extends SubsystemBase {
 
     // ————— functions for odometry ————— //
 
+    public void setPoseEstimator(PoseEstimator poseEstimator) {
+        this.poseEstimator = poseEstimator;
+    }
+
     public void modulePeriodic() {
         for (var module : modules) {
             module.periodic();
         }
     }
-    
+
     public void updateModuleSamples() { // allows all signals to get sampled together
         sampleTimestamps = modules[0].getOdometryTimestamps();
         sampleCount = sampleTimestamps.length;

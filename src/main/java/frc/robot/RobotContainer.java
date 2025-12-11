@@ -94,6 +94,8 @@ public class RobotContainer {
                 break;
         }
 
+        drive.setPoseEstimator(poseEstimator);
+
         configureButtonBindings();
         configureAutos();
     }
