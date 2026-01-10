@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
@@ -100,6 +101,7 @@ public class Drive extends SubsystemBase {
     // ————— velocity ————— //
 
     private ChassisSpeeds speeds = new ChassisSpeeds();
+    private ChassisSpeeds prevSpeeds = new ChassisSpeeds();
 
     public Drive(
         ModuleIO flModuleIO,
@@ -158,9 +160,30 @@ public class Drive extends SubsystemBase {
                 );
                 // fallthrough to VELOCITY case; no break statement needed
             case VELOCITY: 
+                speeds = new ChassisSpeeds(
+                    clampVelocity(
+                        speeds.vxMetersPerSecond, 
+                        prevSpeeds.vxMetersPerSecond, 
+                        DriveConstants.MAX_ALLOWED_LINEAR_ACCEL.in(MetersPerSecondPerSecond) * Constants.PERIOD
+                    ),
+                    clampVelocity(
+                        speeds.vyMetersPerSecond, 
+                        prevSpeeds.vyMetersPerSecond, 
+                        DriveConstants.MAX_ALLOWED_LINEAR_ACCEL.in(MetersPerSecondPerSecond) * Constants.PERIOD
+                    ),
+                    clampVelocity(
+                        speeds.omegaRadiansPerSecond, 
+                        prevSpeeds.omegaRadiansPerSecond, 
+                        DriveConstants.MAX_ALLOWED_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)) * Constants.PERIOD
+                    )
+                );
+            
+            
                 speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD); // explaination: https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/30
                 
                 Logger.recordOutput("outputs/drive/speedsInput", speeds);
+
+                prevSpeeds = speeds;
 
                 SwerveModuleState[] moduleStates = DriveConstants.KINEMATICS.toSwerveModuleStates(speeds); // convert speeds to module states
                 SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DriveConstants.MAX_ALLOWED_LINEAR_SPEED); // renormalize wheel speeds
@@ -283,6 +306,10 @@ public class Drive extends SubsystemBase {
     
     // ————— utils ————— //
     
+    public double clampVelocity(double velocity, double prevVelocity, double maxAcceleration) {
+        return MathUtil.clamp(velocity, prevVelocity - maxAcceleration, prevVelocity + maxAcceleration);
+    }
+
     public double[] getWheelRadiusCharacterizationPositions() {
         double[] values = new double[4];
         for (int i = 0; i < 4; i++) {
