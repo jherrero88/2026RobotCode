@@ -39,3 +39,8 @@
      - Sometimes, a more niche controller (e.g. Gamesir) might show up as multiple controllers in DS
  - MrCal: 
      - https://docs.google.com/document/d/1SDDetHYSshZeu1tcnOC5SHEPUEZCRtlPO9kb6NCubQs/edit?usp=sharing
+ - CAN IDs: 
+     - Drivebase motors are 11, 12, 21, 22, 31, 32, 41, 42 (units digit 1 is drive, 2 is turn)
+     - Drivebase CANCoders are 1, 2, 3, 4
+     - Pigeon is 5
+     - Subsystems are 50, 51, ...

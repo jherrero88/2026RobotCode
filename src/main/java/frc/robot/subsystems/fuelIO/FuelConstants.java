@@ -3,7 +3,11 @@ package frc.robot.subsystems.fuelIO;
 import com.ctre.phoenix6.configs.Slot0Configs;
 
 public class FuelConstants {
-    public final int SHOOTER_MOTOR_ID = 50; // ! probably start from 50 for less confusion
+    public static final int INTAKE_MOTOR_ID = 50;
+    public static final int HOPPER_MOTOR_ID = 51;
+    public static final int TURRET_MOTOR_ID = 52;
+    public static final int ANGLER_MOTOR_ID = 53;
+    public static final int SHOOTER_MOTOR_ID = 54;
 
 
     public static final Slot0Configs SHOOTER_PID = new Slot0Configs()

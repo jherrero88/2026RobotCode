@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.*;
 import edu.wpi.first.math.geometry.*;
@@ -11,6 +13,8 @@ import org.littletonrobotics.junction.Logger;
 import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.poseEstimator.PoseEstimator;
+import frc.robot.subsystems.fuelIO.*;
+import frc.robot.subsystems.fuelIO.shooter.*;
 import frc.robot.subsystems.poseEstimator.odometry.*;
 import frc.robot.subsystems.poseEstimator.vision.*;
 import frc.robot.utils.*;
@@ -22,6 +26,7 @@ public class RobotContainer {
     // subsystems
     private final Drive drive;
     private final PoseEstimator poseEstimator;
+    private final Shooter shooter;
 
     // utils
     private AutoGenerator autoGenerator;
@@ -50,6 +55,7 @@ public class RobotContainer {
                     drive, 
                     startPose
                 );
+                shooter = new Shooter(new ShooterIOReal(FuelConstants.SHOOTER_MOTOR_ID));
                 break;
             case SIM: // sim robot, instantiate physics sim IO implementations
                 configureSimulation();
@@ -77,6 +83,7 @@ public class RobotContainer {
                     drive, 
                     startPose
                 );
+                shooter = new Shooter(new ShooterIOSim());
                 break;
             default: // replayed robot, disable IO implementations
                 drive = new Drive(
@@ -94,6 +101,7 @@ public class RobotContainer {
                     drive, 
                     new Pose2d()
                 );
+                shooter = new Shooter(new ShooterIO() {});
                 break;
         }
 
@@ -119,7 +127,11 @@ public class RobotContainer {
 
         controller.x().onTrue(new InstantCommand(() -> drive.toggleFollowIntake()));
 
+        // ————— fuel ————— //
 
+        controller.x().onTrue(shooter.getSetShooterVoltageCommand(Volts.of(4)));
+        controller.a().onTrue(shooter.getSetShooterVoltageCommand(Volts.of(0)));
+        controller.b().onTrue(shooter.getSetShooterVelocityCommand(RotationsPerSecond.of(50)));
 
         // button for intake
         // button for hold it down and shoot
@@ -129,21 +141,7 @@ public class RobotContainer {
         // first make turret rotate but then make its periodic function auto aim it always (or maybe have a boolean toggle for it
         // first make shooter spin up but then make its periodic function auto aim it always
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // ————— misc. testing ————— //
 
         // controller.x().whileTrue(drive.sysIdFull());
         // controller.y().whileTrue(Commands.runOnce(SignalLogger::start).andThen(drive.sysIdFull()));
