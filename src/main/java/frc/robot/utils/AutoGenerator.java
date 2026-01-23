@@ -62,6 +62,6 @@ public class AutoGenerator {
     // ————— competition routines ————— //
 
     public Command backUp() {
-        return new DriveWithPosition(drive, poseEstimator, new Transform2d(0, 3, new Rotation2d()));
+        return new DriveWithPosition(drive, poseEstimator, new Transform2d(-2, 0, new Rotation2d()));
     }
 }
