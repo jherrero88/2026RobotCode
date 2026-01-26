@@ -13,20 +13,20 @@ public class ShooterIOReal implements ShooterIO {
     private final TalonFX motor;
     private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    protected final VoltageOut voltageRequest = new VoltageOut(0);
-    protected final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
+    private final VoltageOut voltageRequest = new VoltageOut(0);
+    private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
 
-    protected final StatusSignal<Voltage> voltageSignal;
-    protected final StatusSignal<Current> currentSignal;
-    protected final StatusSignal<Angle> positionSignal;
-    protected final StatusSignal<AngularVelocity> velocitySignal;
-    protected final StatusSignal<Temperature> temperatureSignal;
+    private final StatusSignal<Voltage> voltageSignal;
+    private final StatusSignal<Current> currentSignal;
+    private final StatusSignal<Angle> positionSignal;
+    private final StatusSignal<AngularVelocity> velocitySignal;
+    private final StatusSignal<Temperature> temperatureSignal;
 
     public ShooterIOReal(int id) {
         motor = new TalonFX(id);
 
         // motor config
-        motorConfig.Slot0 = FuelConstants.SHOOTER_PID;
+        motorConfig.Slot0 = FuelConstants.SHOOTER_PIDF;
         motorConfig.CurrentLimits.StatorCurrentLimit = 40;
         motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         motor.getConfigurator().apply(motorConfig);

@@ -12,10 +12,10 @@ public interface ShooterIO {
         public double shooterVelocity;
         public double shooterTemperature;
     }
+
+    public default void updateInputs(ShooterIOInputs inputs) {}
     
     public default void setVoltage(Voltage volts) {}
 
-    public default void setVelocity(AngularVelocity velocityRadPerSec) {}
-
-    public default void updateInputs(ShooterIOInputs inputs) {}
+    public default void setVelocity(AngularVelocity velocity) {}
 }

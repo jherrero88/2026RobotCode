@@ -55,9 +55,9 @@ public class DriveConstants { // * indicates a physical measurement
     
     private static final int PIGEON_ID = 5;
 
-    // ————— PID ————— //
+    // ————— PIDF ————— //
 
-    private static final Slot0Configs DRIVE_PID = new Slot0Configs()
+    private static final Slot0Configs DRIVE_PIDF = new Slot0Configs()
     .withKP(0.000062333)
     .withKI(0)
     .withKD(0)
@@ -65,7 +65,7 @@ public class DriveConstants { // * indicates a physical measurement
     .withKV(0.13259)
     .withKA(0.025003);
     
-    private static final Slot0Configs TURN_PID = new Slot0Configs()
+    private static final Slot0Configs TURN_PIDF = new Slot0Configs()
     .withKP(15)
     .withKI(0)
     .withKD(0)
@@ -136,8 +136,8 @@ public class DriveConstants { // * indicates a physical measurement
     .withSteerMotorGearRatio(MODULE_TURN_GEAR_RATIO)
     .withCouplingGearRatio(MODULE_COUPLE_RATIO)
     .withWheelRadius(WHEEL_RADIUS)
-    .withSteerMotorGains(TURN_PID)
-    .withDriveMotorGains(DRIVE_PID)
+    .withSteerMotorGains(TURN_PIDF)
+    .withDriveMotorGains(DRIVE_PIDF)
     .withSteerMotorClosedLoopOutput(TURN_PID_TYPE)
     .withDriveMotorClosedLoopOutput(DRIVE_PID_TYPE)
     .withSlipCurrent(SLIP_CURRENT)

@@ -5,10 +5,13 @@ import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
+    // ! add turret code or whatever
+
+
     private final ShooterIO io;
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
-    boolean autoVelocity;
+    private boolean autoVelocity;
 
     public Shooter(ShooterIO io) {
         this.io = io;
