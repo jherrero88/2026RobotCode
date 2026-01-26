@@ -11,7 +11,7 @@ public final class Constants {
     }
     public static final ROBOT_MODE CURRENT_MODE = RobotBase.isReal() ? ROBOT_MODE.REAL : ROBOT_MODE.SIM;
 
-    public static final boolean USE_ALLIANCE_FLIPPING = false;
+    public static final boolean USE_ALLIANCE_FLIPPING = false; // !
 
     public static final int CONTROLLER_PORT = 2;
 }

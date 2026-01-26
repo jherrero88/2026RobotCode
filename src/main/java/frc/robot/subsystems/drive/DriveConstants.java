@@ -82,7 +82,7 @@ public class DriveConstants { // * indicates a physical measurement
 
     private static final Distance WHEEL_RADIUS = Inches.of(2); // * 
     public static final double WHEEL_COEFFICIENT_OF_FRICTION = 1.2;
-    private static final double MODULE_COUPLE_RATIO = 3.125; // ! * tune this
+    private static final double MODULE_COUPLE_RATIO = 3.125;
     private static final double MODULE_DRIVE_GEAR_RATIO = 5.902777777777778;
     private static final double MODULE_TURN_GEAR_RATIO = 18.75;
     
@@ -90,8 +90,8 @@ public class DriveConstants { // * indicates a physical measurement
 
     public static final Mass ROBOT_WEIGHT = Pounds.of(74.088); // ! *
     public static final MomentOfInertia ROBOT_MOI = KilogramSquareMeters.of(6.883); // ! *
-    public static final Distance TRACK_WIDTH_X = Inches.of(26.5); // *
-    public static final Distance TRACK_WIDTH_Y = Inches.of(26.5); // *
+    public static final Distance TRACK_WIDTH_X = Inches.of(26.5); // ! *
+    public static final Distance TRACK_WIDTH_Y = Inches.of(26.5); // ! *
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] { // using the chassisspeeds coordinate plane
         new Translation2d(TRACK_WIDTH_X.in(Meters) / 2.0, TRACK_WIDTH_Y.in(Meters) / 2.0), // FL
         new Translation2d(TRACK_WIDTH_X.in(Meters) / 2.0, -TRACK_WIDTH_Y.in(Meters) / 2.0), // FR
@@ -111,7 +111,7 @@ public class DriveConstants { // * indicates a physical measurement
     public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     
     public static final LinearVelocity MAX_THEORETICAL_LINEAR_SPEED = MetersPerSecond.of(5.41);
-    public static final LinearVelocity MAX_ALLOWED_LINEAR_SPEED = MetersPerSecond.of(5.41);
+    public static final LinearVelocity MAX_ALLOWED_LINEAR_SPEED = MetersPerSecond.of(1); // *
     public static final AngularVelocity MAX_ALLOWED_ANGULAR_SPEED = RadiansPerSecond.of(MAX_ALLOWED_LINEAR_SPEED.in(MetersPerSecond) / DriveConstants.TRACK_RADIUS);
     public static final LinearAcceleration MAX_ALLOWED_LINEAR_ACCEL = MetersPerSecondPerSecond.of(20);
     public static final AngularAcceleration MAX_ALLOWED_ANGULAR_ACCEL = RadiansPerSecondPerSecond.of(MAX_ALLOWED_LINEAR_ACCEL.in(MetersPerSecondPerSecond) / DriveConstants.TRACK_RADIUS);
