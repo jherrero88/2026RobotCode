@@ -33,7 +33,7 @@ public class DriveConstants { // * indicates a physical measurement
 
     private static final int[] DRIVE_MOTOR_IDS = {11, 21, 31, 41};
     private static final int[] TURN_MOTOR_IDS = {12, 22, 32, 42};
-    private static final boolean[] DRIVE_INVERSIONS = {false, true, false, true};
+    private static final boolean[] DRIVE_INVERSIONS = {false, true, false, true}; // !
     private static final boolean[] TURN_INVERSIONS = {true, true, true, true};
     
     // ————— encoders ————— //
@@ -90,8 +90,8 @@ public class DriveConstants { // * indicates a physical measurement
 
     public static final Mass ROBOT_WEIGHT = Pounds.of(74.088); // ! *
     public static final MomentOfInertia ROBOT_MOI = KilogramSquareMeters.of(6.883); // ! *
-    public static final Distance TRACK_WIDTH_X = Inches.of(26.5); // ! *
-    public static final Distance TRACK_WIDTH_Y = Inches.of(26.5); // ! *
+    public static final Distance TRACK_WIDTH_X = Inches.of(22.5); // *
+    public static final Distance TRACK_WIDTH_Y = Inches.of(22.5); // *
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] { // using the chassisspeeds coordinate plane
         new Translation2d(TRACK_WIDTH_X.in(Meters) / 2.0, TRACK_WIDTH_Y.in(Meters) / 2.0), // FL
         new Translation2d(TRACK_WIDTH_X.in(Meters) / 2.0, -TRACK_WIDTH_Y.in(Meters) / 2.0), // FR

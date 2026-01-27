@@ -14,7 +14,8 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.poseEstimator.PoseEstimator;
 import frc.robot.subsystems.fuelIO.*;
-import frc.robot.subsystems.fuelIO.shooter.*;
+import frc.robot.subsystems.fuelIO.intake.*;
+// import frc.robot.subsystems.fuelIO.shooter.*;
 import frc.robot.subsystems.poseEstimator.odometry.*;
 import frc.robot.subsystems.poseEstimator.vision.*;
 import frc.robot.utils.*;
@@ -26,7 +27,8 @@ public class RobotContainer {
     // subsystems
     private final Drive drive;
     private final PoseEstimator poseEstimator;
-    private final Shooter shooter;
+    private final Intake intake;
+    // private final Shooter shooter;
 
     // utils
     private AutoGenerator autoGenerator;
@@ -55,7 +57,8 @@ public class RobotContainer {
                     drive, 
                     startPose
                 );
-                shooter = new Shooter(new ShooterIOReal(FuelConstants.SHOOTER_MOTOR_ID));
+                intake = new Intake(new IntakeIOReal(FuelConstants.INTAKE_MOTOR_ID, FuelConstants.PIVOT_MOTOR_ID, 0, 0));
+                // shooter = new Shooter(new ShooterIOReal(FuelConstants.SHOOTER_MOTOR_ID));
                 break;
             case SIM: // sim robot, instantiate physics sim IO implementations
                 configureSimulation();
@@ -83,7 +86,8 @@ public class RobotContainer {
                     drive, 
                     startPose
                 );
-                shooter = new Shooter(new ShooterIOSim());
+                intake = new Intake(new IntakeIOSim());
+                // shooter = new Shooter(new ShooterIOSim());
                 break;
             default: // replayed robot, disable IO implementations
                 drive = new Drive(
@@ -101,7 +105,8 @@ public class RobotContainer {
                     drive, 
                     new Pose2d()
                 );
-                shooter = new Shooter(new ShooterIO() {});
+                intake = new Intake(new IntakeIO() {});
+                // shooter = new Shooter(new ShooterIO() {});
                 break;
         }
 
@@ -125,14 +130,15 @@ public class RobotContainer {
             )
         );
 
-        controller.x().onTrue(new InstantCommand(() -> drive.toggleFollowIntake()));
+        // controller.x().onTrue(new InstantCommand(() -> drive.toggleFollowIntake())); // ! test
 
         // ————— fuel ————— //
 
-        controller.x().onTrue(shooter.getSetShooterVoltageCommand(Volts.of(4)));
-        controller.a().onTrue(shooter.getSetShooterVoltageCommand(Volts.of(0)));
-        controller.b().onTrue(shooter.getSetShooterVelocityCommand(RotationsPerSecond.of(50)));
-
+        controller.x().onTrue(intake.getSetIntakeVoltageCommand(Volts.of(2)));
+        controller.a().onTrue(intake.getSetIntakeVoltageCommand(Volts.of(0)));
+        
+        controller.y().onTrue(intake.getSetPivotVoltageCommand(Volts.of(2)));
+        
         // button for intake
         // button for hold it down and shoot
             // spin up the hopper
