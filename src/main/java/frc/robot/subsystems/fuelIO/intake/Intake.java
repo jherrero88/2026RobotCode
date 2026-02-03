@@ -1,12 +1,15 @@
 package frc.robot.subsystems.fuelIO.intake;
 
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.subsystems.fuelIO.FuelConstants;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+
+    Angle pivotAngle = FuelConstants.INTAKE_START_ANGLE;
 
     boolean autoVelocity;
 
@@ -18,6 +21,8 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("intake", inputs);
+
+        // io.setPivotPosition(pivotAngle);
     }
 
     // ————— raw command factories ————— //
@@ -35,7 +40,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command getSetPivotPositionCommand(Angle angle) {
-        return runOnce(() -> io.setPivotPosition(angle));
+        return runOnce(() -> pivotAngle = angle);
     }
 
     // ————— processed command factories ————— //

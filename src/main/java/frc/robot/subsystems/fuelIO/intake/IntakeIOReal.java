@@ -8,8 +8,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.*;
-// import edu.wpi.first.wpilibj.DigitalInput;
-// import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.fuelIO.FuelConstants;
 
 public class IntakeIOReal implements IntakeIO {
@@ -21,9 +19,6 @@ public class IntakeIOReal implements IntakeIO {
 
     private final RelativeEncoder intakeEncoder;
     private final RelativeEncoder pivotEncoder;
-
-    // private final Trigger upSwitch;
-    // private final Trigger downSwitch;
 
     public IntakeIOReal(
         int intakeId, 
@@ -43,21 +38,22 @@ public class IntakeIOReal implements IntakeIO {
         intakeEncoder.setPosition(0.0);
         
         pivotEncoder = pivotMotor.getEncoder();
-        pivotEncoder.setPosition(0.603171);
+        // pivotEncoder.setPosition(0.603171);
+        pivotEncoder.setPosition(-0.095238); // when 0 is intaking side horizontal
 
         // pid 
         intakeConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).apply(FuelConstants.INTAKE_PID);
         // intakeConfig.closedLoop.feedForward.kV(FuelConstants.INTAKE_KV);
         pivotConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).apply(FuelConstants.PIVOT_PID);
-        pivotConfig.closedLoop.feedForward.kCos(FuelConstants.PIVOT_KG);
-        pivotConfig.closedLoop.maxMotion.cruiseVelocity(1);
-        // pivotConfig.closedLoop.maxMotion.maxAcceleration();
+        pivotConfig.closedLoop.maxMotion.cruiseVelocity(RotationsPerSecond.of(0.25).in(Rotations.per(Minute)));
+        pivotConfig.closedLoop.maxMotion.maxAcceleration(RotationsPerSecondPerSecond.of(100).in(Rotations.per(Minute).per(Second)));
+        pivotConfig.closedLoop.maxMotion.allowedProfileError(Rotations.of(0.05).in(Rotations));
 
         // miscellaneous settings
         intakeConfig.signals.primaryEncoderVelocityPeriodMs(10);
         intakeConfig.encoder.quadratureMeasurementPeriod(10);
         intakeConfig.encoder.quadratureAverageDepth(2);
-        
+
         intakeConfig.smartCurrentLimit(30);
         intakeConfig.voltageCompensation(12);
         pivotConfig.smartCurrentLimit(30);
@@ -80,9 +76,6 @@ public class IntakeIOReal implements IntakeIO {
         intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         pivotMotor.setCANTimeout(0);
         pivotMotor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-        // upSwitch = new Trigger(new DigitalInput(upSwitchPort)::get);
-        // downSwitch = new Trigger(new DigitalInput(downSwitchPort)::get);
     }
 
     @Override
@@ -123,8 +116,9 @@ public class IntakeIOReal implements IntakeIO {
     public void setPivotPosition(Angle angle) {
         pivotMotor.getClosedLoopController().setSetpoint(
             angle.in(Rotations), 
-            SparkMax.ControlType.kPosition, 
-            ClosedLoopSlot.kSlot0
+            SparkMax.ControlType.kMAXMotionPositionControl, 
+            ClosedLoopSlot.kSlot0,
+            FuelConstants.PIVOT_KCOS * Math.cos(Rotations.of(pivotEncoder.getPosition()).in(Radians))
         );
     }
 }

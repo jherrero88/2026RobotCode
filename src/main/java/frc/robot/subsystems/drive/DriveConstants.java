@@ -40,7 +40,7 @@ public class DriveConstants { // * indicates a physical measurement
     
     private static final CANcoderConfiguration ENCODER_CONFIG = new CANcoderConfiguration();
     
-    private static final int[] ENCODER_IDS = {1, 2, 3, 4};
+    private static final int[] ENCODER_IDS = {13, 23, 33, 43};
     private static final boolean[] ENCODER_INVERSIONS = {false, false, false, false};
     private static final Angle[] ENCODER_OFFSETS = {
         Rotations.of(0.03271484375),
