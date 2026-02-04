@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("intake", inputs);
 
-        // io.setPivotPosition(pivotAngle);
+        io.setPivotPosition(pivotAngle);
     }
 
     // ————— raw command factories ————— //
