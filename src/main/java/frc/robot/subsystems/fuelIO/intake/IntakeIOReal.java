@@ -38,8 +38,7 @@ public class IntakeIOReal implements IntakeIO {
         intakeEncoder.setPosition(0.0);
         
         pivotEncoder = pivotMotor.getEncoder();
-        // pivotEncoder.setPosition(0.603171);
-        pivotEncoder.setPosition(-0.095238); // when 0 is intaking side horizontal
+        pivotEncoder.setPosition(FuelConstants.INTAKE_START_ANGLE.in(Rotations));
 
         // pid 
         intakeConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).apply(FuelConstants.INTAKE_PID);
